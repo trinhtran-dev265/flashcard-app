@@ -1,6 +1,8 @@
 import 'dart:ui';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/auth_event.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/auth_state.dart';
 import 'package:flashcard_fe/src/features/auth/presentation/widget/glass_field.dart';
-import 'package:flashcard_fe/src/features/auth/presentation/bloc/register/register.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,7 +12,7 @@ class RegisterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => RegisterBloc(),
+      create: (_) => AuthBloc(),
       child: const _LiquidScaffold(child: Center(child: _GlassRegisterCard())),
     );
   }
@@ -82,7 +84,7 @@ class _RegisterForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<RegisterBloc, RegisterState>(
+    return BlocConsumer<AuthBloc, AuthState>(
       listenWhen:
           (a, b) =>
               a.error != b.error ||
@@ -125,8 +127,7 @@ class _RegisterForm extends StatelessWidget {
             GlassField(
               hintText: 'Email',
               keyboardType: TextInputType.emailAddress,
-              onChanged:
-                  (v) => context.read<RegisterBloc>().add(RegEmailChanged(v)),
+              onChanged: (v) => context.read<AuthBloc>().add(EmailChanged(v)),
               leading: const Icon(Icons.alternate_email_rounded, size: 20),
             ),
             const SizedBox(height: 12),
@@ -134,12 +135,10 @@ class _RegisterForm extends StatelessWidget {
               hintText: 'Password',
               obscureText: state.obscure,
               onChanged:
-                  (v) =>
-                      context.read<RegisterBloc>().add(RegPasswordChanged(v)),
+                  (v) => context.read<AuthBloc>().add(PasswordChanged(v)),
               leading: const Icon(Icons.key_rounded, size: 20),
               trailing: IconButton(
-                onPressed:
-                    () => context.read<RegisterBloc>().add(RegToggleObscure()),
+                onPressed: () => context.read<AuthBloc>().add(ToggleObscure()),
                 icon: Icon(
                   state.obscure
                       ? Icons.visibility_off_rounded
@@ -152,14 +151,11 @@ class _RegisterForm extends StatelessWidget {
             GlassField(
               hintText: 'Confirm password',
               obscureText: state.obscureConfirm,
-              onChanged:
-                  (v) => context.read<RegisterBloc>().add(RegConfirmChanged(v)),
+              onChanged: (v) => context.read<AuthBloc>().add(ConfirmChanged(v)),
               leading: const Icon(Icons.key_rounded, size: 20),
               trailing: IconButton(
                 onPressed:
-                    () => context.read<RegisterBloc>().add(
-                      RegToggleConfirmObscure(),
-                    ),
+                    () => context.read<AuthBloc>().add(ToggleConfirmObscure()),
                 icon: Icon(
                   state.obscureConfirm
                       ? Icons.visibility_off_rounded
@@ -171,8 +167,8 @@ class _RegisterForm extends StatelessWidget {
             const SizedBox(height: 18),
             FilledButton.tonal(
               onPressed:
-                  state.canSubmit
-                      ? () => context.read<RegisterBloc>().add(RegSubmitted())
+                  state.canRegister
+                      ? () => context.read<AuthBloc>().add(RegisterSubmitted())
                       : null,
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),

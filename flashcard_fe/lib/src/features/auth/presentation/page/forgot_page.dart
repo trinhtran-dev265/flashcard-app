@@ -1,18 +1,17 @@
 import 'dart:ui';
-import 'package:flashcard_fe/src/features/auth/presentation/widget/glass_field.dart';
-import 'package:flashcard_fe/src/features/auth/presentation/bloc/forgot/forgot.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/auth_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/widget/glass_field.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/auth_state.dart';
 
 class ForgotPasswordPage extends StatelessWidget {
   const ForgotPasswordPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ForgotBloc(),
-      child: const _LiquidScaffold(child: Center(child: _GlassForgotCard())),
-    );
+    return const _LiquidScaffold(child: Center(child: _GlassForgotCard()));
   }
 }
 
@@ -76,12 +75,16 @@ class _GlassForgotCard extends StatelessWidget {
 
 class _ForgotForm extends StatelessWidget {
   const _ForgotForm();
+
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ForgotBloc, ForgotState>(
+    return BlocConsumer<AuthBloc, AuthState>(
       listenWhen:
           (a, b) =>
-              a.error != b.error || a.loading != b.loading || a.sent != b.sent,
+              a.error != b.error ||
+              a.success != b.success ||
+              a.loading != b.loading ||
+              a.sent != b.sent,
       listener: (context, state) {
         if (state.error != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -91,9 +94,12 @@ class _ForgotForm extends StatelessWidget {
             ),
           );
         }
-        if (state.sent) {
+        if (state.sent && state.error == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Đã gửi email khôi phục mật khẩu.')),
+            const SnackBar(
+              content: Text('Đã gửi email khôi phục mật khẩu.'),
+              behavior: SnackBarBehavior.floating,
+            ),
           );
           Navigator.pop(context);
         }
@@ -119,15 +125,15 @@ class _ForgotForm extends StatelessWidget {
             GlassField(
               hintText: 'Email',
               keyboardType: TextInputType.emailAddress,
-              onChanged:
-                  (v) => context.read<ForgotBloc>().add(FgEmailChanged(v)),
+              onChanged: (v) => context.read<AuthBloc>().add(EmailChanged(v)),
               leading: const Icon(Icons.alternate_email_rounded, size: 20),
             ),
             const SizedBox(height: 18),
             FilledButton.tonal(
               onPressed:
-                  state.canSubmit
-                      ? () => context.read<ForgotBloc>().add(FgSubmitted())
+                  state.canForgot
+                      ? () =>
+                          context.read<AuthBloc>().add(const ForgotSubmitted())
                       : null,
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),

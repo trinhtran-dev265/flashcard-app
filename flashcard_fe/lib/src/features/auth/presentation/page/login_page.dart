@@ -2,10 +2,12 @@ import 'dart:ui';
 import 'package:flashcard_fe/src/features/auth/presentation/page/forgot_page.dart';
 import 'package:flashcard_fe/src/features/auth/presentation/page/register_page.dart';
 import 'package:flashcard_fe/src/features/auth/presentation/widget/glass_field.dart';
-import 'package:flashcard_fe/src/features/auth/presentation/bloc/login/login.dart';
-import 'package:flashcard_fe/src/features/card/presentation/page/home_page.dart';
+import 'package:flashcard_fe/src/features/home/presentation/page/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/auth_event.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/auth_state.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -172,10 +174,10 @@ class _LoginForm extends StatelessWidget {
   const _LoginForm();
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<LoginBloc, LoginState>(
+    return BlocConsumer<AuthBloc, AuthState>(
       listenWhen:
           (prev, curr) =>
-              prev.error != curr.error || prev.loading != curr.loading,
+              prev.error != curr.error || prev.success != curr.success,
       listener: (context, state) {
         if (state.error != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -185,11 +187,9 @@ class _LoginForm extends StatelessWidget {
             ),
           );
         }
-        
-        if (!state.loading &&
-            state.error == null &&
-            state.email == 'demo@demo.com' &&
-            state.password == '123456') {
+
+        // Khi login thành công
+        if (state.success && state.error == null) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const HomePage()),
@@ -217,7 +217,7 @@ class _LoginForm extends StatelessWidget {
             GlassField(
               hintText: 'Email',
               keyboardType: TextInputType.emailAddress,
-              onChanged: (v) => context.read<LoginBloc>().add(EmailChanged(v)),
+              onChanged: (v) => context.read<AuthBloc>().add(EmailChanged(v)),
               leading: const Icon(Icons.alternate_email_rounded, size: 20),
             ),
             const SizedBox(height: 12),
@@ -225,10 +225,11 @@ class _LoginForm extends StatelessWidget {
               hintText: 'Password',
               obscureText: state.obscure,
               onChanged:
-                  (v) => context.read<LoginBloc>().add(PasswordChanged(v)),
+                  (v) => context.read<AuthBloc>().add(PasswordChanged(v)),
               leading: const Icon(Icons.key_rounded, size: 20),
               trailing: IconButton(
-                onPressed: () => context.read<LoginBloc>().add(ToggleObscure()),
+                onPressed:
+                    () => context.read<AuthBloc>().add(const ToggleObscure()),
                 icon: Icon(
                   state.obscure
                       ? Icons.visibility_off_rounded
@@ -237,7 +238,7 @@ class _LoginForm extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             Row(
               children: [
                 const Icon(
@@ -248,7 +249,7 @@ class _LoginForm extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    'Mẹo: thử email chứa "demo" và mật khẩu "password"',
+                    'Mẹo: thử email demo@demo.com và mật khẩu 123456',
                     style: Theme.of(
                       context,
                     ).textTheme.bodySmall?.copyWith(color: Colors.white70),
@@ -256,14 +257,16 @@ class _LoginForm extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 22),
             Row(
               children: [
                 Expanded(
                   child: FilledButton.tonal(
                     onPressed:
-                        state.canSubmit
-                            ? () => context.read<LoginBloc>().add(Submitted())
+                        state.canLogin
+                            ? () => context.read<AuthBloc>().add(
+                              const LoginSubmitted(),
+                            )
                             : null,
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
