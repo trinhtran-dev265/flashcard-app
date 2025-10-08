@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:flashcard_fe/src/features/auth/presentation/pages/login_page.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/page/login_page.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatelessWidget {

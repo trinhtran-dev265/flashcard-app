@@ -1,9 +1,9 @@
 import 'dart:ui';
-import 'package:flashcard_fe/src/features/auth/presentation/pages/forgot_page.dart';
-import 'package:flashcard_fe/src/features/auth/presentation/pages/register_page.dart';
-import 'package:flashcard_fe/src/features/auth/presentation/widgets/glass_field.dart';
-import 'package:flashcard_fe/src/features/auth/state/login/login.dart';
-import 'package:flashcard_fe/src/features/home/presentation/pages/home_page.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/page/forgot_page.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/page/register_page.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/widget/glass_field.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/login/login.dart';
+import 'package:flashcard_fe/src/features/card/presentation/page/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

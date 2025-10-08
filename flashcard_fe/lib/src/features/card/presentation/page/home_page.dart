@@ -1,6 +1,6 @@
 import 'dart:ui';
-import 'package:flashcard_fe/src/features/home/presentation/pages/addcard_page.dart';
-import 'package:flashcard_fe/src/features/profile/presentation/profile_page.dart';
+import 'package:flashcard_fe/src/features/home/presentation/page/addcard_page.dart';
+import 'package:flashcard_fe/src/features/profile/presentation/page/profile_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {

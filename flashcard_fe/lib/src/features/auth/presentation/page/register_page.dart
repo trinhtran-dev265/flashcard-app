@@ -1,6 +1,6 @@
 import 'dart:ui';
-import 'package:flashcard_fe/src/features/auth/presentation/widgets/glass_field.dart';
-import 'package:flashcard_fe/src/features/auth/state/register/register.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/widget/glass_field.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/register/register.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
