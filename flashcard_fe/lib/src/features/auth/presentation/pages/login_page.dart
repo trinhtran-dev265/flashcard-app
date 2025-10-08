@@ -1,13 +1,14 @@
 import 'dart:ui';
+import 'package:flashcard_fe/src/features/auth/presentation/pages/forgot_page.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/pages/register_page.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/widgets/glass_field.dart';
+import 'package:flashcard_fe/src/features/auth/state/login/login.dart';
+import 'package:flashcard_fe/src/features/home/presentation/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../state/login_bloc.dart';
-import '../../state/login_event.dart';
-import '../../state/login_state.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return const _LiquidScaffold(child: Center(child: _GlassLoginCard()));
@@ -17,7 +18,6 @@ class LoginPage extends StatelessWidget {
 class _LiquidScaffold extends StatefulWidget {
   final Widget child;
   const _LiquidScaffold({required this.child});
-
   @override
   State<_LiquidScaffold> createState() => _LiquidScaffoldState();
 }
@@ -25,7 +25,6 @@ class _LiquidScaffold extends StatefulWidget {
 class _LiquidScaffoldState extends State<_LiquidScaffold>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ac;
-
   @override
   void initState() {
     super.initState();
@@ -44,11 +43,9 @@ class _LiquidScaffoldState extends State<_LiquidScaffold>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-
     return Scaffold(
       body: Stack(
         children: [
-          // Gradient nền (deep purple → indigo → cyan)
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -62,7 +59,6 @@ class _LiquidScaffoldState extends State<_LiquidScaffold>
               ),
             ),
           ),
-
           AnimatedBuilder(
             animation: _ac,
             builder: (context, child) {
@@ -91,60 +87,55 @@ class _LiquidScaffoldState extends State<_LiquidScaffold>
               );
             },
           ),
-
           Positioned(right: 24, top: 56, child: _specularDot()),
           Positioned(left: 32, bottom: 64, child: _specularDot(size: 9)),
-
-          // Nội dung
           SafeArea(child: widget.child),
         ],
       ),
     );
   }
+}
 
-  Widget _blob({
-    required double left,
-    required double top,
-    required double diameter,
-    required Color color,
-  }) {
-    return Positioned(
-      left: left,
-      top: top,
-      child: Container(
-        width: diameter,
-        height: diameter,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(colors: [color, Colors.transparent]),
-        ),
-      ),
-    );
-  }
-
-  Widget _specularDot({double size = 12}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: const BoxDecoration(
+Widget _blob({
+  required double left,
+  required double top,
+  required double diameter,
+  required Color color,
+}) {
+  return Positioned(
+    left: left,
+    top: top,
+    child: Container(
+      width: diameter,
+      height: diameter,
+      decoration: BoxDecoration(
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(blurRadius: 12, spreadRadius: 2, color: Colors.white24),
-        ],
-        color: Colors.white,
+        gradient: RadialGradient(colors: [color, Colors.transparent]),
       ),
-    );
-  }
+    ),
+  );
+}
+
+Widget _specularDot({double size = 12}) {
+  return Container(
+    width: size,
+    height: size,
+    decoration: const BoxDecoration(
+      shape: BoxShape.circle,
+      boxShadow: [
+        BoxShadow(blurRadius: 12, spreadRadius: 2, color: Colors.white24),
+      ],
+      color: Colors.white,
+    ),
+  );
 }
 
 class _GlassLoginCard extends StatelessWidget {
   const _GlassLoginCard();
-
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final cardWidth = width > 560 ? 480.0 : width - 32.0;
-
     return Center(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(28),
@@ -179,7 +170,6 @@ class _GlassLoginCard extends StatelessWidget {
 
 class _LoginForm extends StatelessWidget {
   const _LoginForm();
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<LoginBloc, LoginState>(
@@ -193,6 +183,16 @@ class _LoginForm extends StatelessWidget {
               content: Text(state.error!),
               behavior: SnackBarBehavior.floating,
             ),
+          );
+        }
+        
+        if (!state.loading &&
+            state.error == null &&
+            state.email == 'demo@demo.com' &&
+            state.password == '123456') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomePage()),
           );
         }
       },
@@ -214,17 +214,14 @@ class _LoginForm extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 18),
-
-            // Email
-            _GlassField(
+            GlassField(
               hintText: 'Email',
               keyboardType: TextInputType.emailAddress,
               onChanged: (v) => context.read<LoginBloc>().add(EmailChanged(v)),
               leading: const Icon(Icons.alternate_email_rounded, size: 20),
             ),
             const SizedBox(height: 12),
-
-            _GlassField(
+            GlassField(
               hintText: 'Password',
               obscureText: state.obscure,
               onChanged:
@@ -259,98 +256,58 @@ class _LoginForm extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 18),
-            FilledButton.tonal(
-              onPressed:
-                  state.canSubmit
-                      ? () => context.read<LoginBloc>().add(Submitted())
-                      : null,
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              child:
-                  state.loading
-                      ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                      : const Text('Sign in'),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.tonal(
+                    onPressed:
+                        state.canSubmit
+                            ? () => context.read<LoginBloc>().add(Submitted())
+                            : null,
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child:
+                        state.loading
+                            ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : const Text('Sign in'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.tonal(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RegisterPage()),
+                      );
+                    },
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text('Register'),
+                  ),
+                ),
+              ],
             ),
-
-            const SizedBox(height: 14),
-            TextButton(onPressed: () {}, child: const Text('Forgot password?')),
+            const SizedBox(height: 10),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
+                );
+              },
+              child: const Text('Forgot password?'),
+            ),
           ],
         );
       },
-    );
-  }
-}
-
-class _GlassField extends StatelessWidget {
-  final String hintText;
-  final bool obscureText;
-  final Widget? leading;
-  final Widget? trailing;
-  final TextInputType? keyboardType;
-  final ValueChanged<String>? onChanged;
-
-  const _GlassField({
-    required this.hintText,
-    this.obscureText = false,
-    this.leading,
-    this.trailing,
-    this.keyboardType,
-    this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final baseFill = Colors.white.withValues(alpha: 0.06);
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: BorderSide(
-        color: Colors.white.withValues(alpha: 0.28),
-        width: 1,
-      ),
-    );
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: 0.06),
-            Colors.white.withValues(alpha: 0.02),
-          ],
-        ),
-      ),
-      child: TextField(
-        onChanged: onChanged,
-        keyboardType: keyboardType,
-        obscureText: obscureText,
-        decoration: InputDecoration(
-          prefixIcon: leading,
-          suffixIcon: trailing,
-          hintText: hintText,
-          filled: true,
-          fillColor: baseFill,
-          enabledBorder: border,
-          focusedBorder: border.copyWith(
-            borderSide: BorderSide(
-              color: Colors.white.withValues(alpha: 0.55),
-              width: 1.2,
-            ),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 14,
-          ),
-        ),
-      ),
     );
   }
 }
