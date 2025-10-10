@@ -1,17 +1,19 @@
 import 'dart:ui';
-import 'package:flashcard_fe/src/features/auth/presentation/widgets/glass_field.dart';
-import 'package:flashcard_fe/src/features/auth/state/forgot/forgot.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/auth_event.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/bloc/auth_state.dart';
+import 'package:flashcard_fe/src/features/auth/presentation/widget/glass_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ForgotPasswordPage extends StatelessWidget {
-  const ForgotPasswordPage({super.key});
+class RegisterPage extends StatelessWidget {
+  const RegisterPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ForgotBloc(),
-      child: const _LiquidScaffold(child: Center(child: _GlassForgotCard())),
+      create: (_) => AuthBloc(),
+      child: const _LiquidScaffold(child: Center(child: _GlassRegisterCard())),
     );
   }
 }
@@ -19,6 +21,7 @@ class ForgotPasswordPage extends StatelessWidget {
 class _LiquidScaffold extends StatelessWidget {
   final Widget child;
   const _LiquidScaffold({required this.child});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,12 +47,14 @@ class _LiquidScaffold extends StatelessWidget {
   }
 }
 
-class _GlassForgotCard extends StatelessWidget {
-  const _GlassForgotCard();
+class _GlassRegisterCard extends StatelessWidget {
+  const _GlassRegisterCard();
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final cardWidth = width > 560 ? 480.0 : width - 32.0;
+
     return Center(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(28),
@@ -66,7 +71,7 @@ class _GlassForgotCard extends StatelessWidget {
                 width: 1.0,
               ),
             ),
-            child: const _ForgotForm(),
+            child: const _RegisterForm(),
           ),
         ),
       ),
@@ -74,14 +79,17 @@ class _GlassForgotCard extends StatelessWidget {
   }
 }
 
-class _ForgotForm extends StatelessWidget {
-  const _ForgotForm();
+class _RegisterForm extends StatelessWidget {
+  const _RegisterForm();
+
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ForgotBloc, ForgotState>(
+    return BlocConsumer<AuthBloc, AuthState>(
       listenWhen:
           (a, b) =>
-              a.error != b.error || a.loading != b.loading || a.sent != b.sent,
+              a.error != b.error ||
+              a.loading != b.loading ||
+              a.success != b.success,
       listener: (context, state) {
         if (state.error != null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -91,9 +99,9 @@ class _ForgotForm extends StatelessWidget {
             ),
           );
         }
-        if (state.sent) {
+        if (state.success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Đã gửi email khôi phục mật khẩu.')),
+            const SnackBar(content: Text('Tạo tài khoản thành công!')),
           );
           Navigator.pop(context);
         }
@@ -105,10 +113,10 @@ class _ForgotForm extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.lock_reset_rounded),
+                const Icon(Icons.person_add_alt_1_rounded),
                 const SizedBox(width: 10),
                 Text(
-                  'Forgot password',
+                  'Create account',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -119,15 +127,48 @@ class _ForgotForm extends StatelessWidget {
             GlassField(
               hintText: 'Email',
               keyboardType: TextInputType.emailAddress,
-              onChanged:
-                  (v) => context.read<ForgotBloc>().add(FgEmailChanged(v)),
+              onChanged: (v) => context.read<AuthBloc>().add(EmailChanged(v)),
               leading: const Icon(Icons.alternate_email_rounded, size: 20),
+            ),
+            const SizedBox(height: 12),
+            GlassField(
+              hintText: 'Password',
+              obscureText: state.obscure,
+              onChanged:
+                  (v) => context.read<AuthBloc>().add(PasswordChanged(v)),
+              leading: const Icon(Icons.key_rounded, size: 20),
+              trailing: IconButton(
+                onPressed: () => context.read<AuthBloc>().add(ToggleObscure()),
+                icon: Icon(
+                  state.obscure
+                      ? Icons.visibility_off_rounded
+                      : Icons.visibility_rounded,
+                  size: 20,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            GlassField(
+              hintText: 'Confirm password',
+              obscureText: state.obscureConfirm,
+              onChanged: (v) => context.read<AuthBloc>().add(ConfirmChanged(v)),
+              leading: const Icon(Icons.key_rounded, size: 20),
+              trailing: IconButton(
+                onPressed:
+                    () => context.read<AuthBloc>().add(ToggleConfirmObscure()),
+                icon: Icon(
+                  state.obscureConfirm
+                      ? Icons.visibility_off_rounded
+                      : Icons.visibility_rounded,
+                  size: 20,
+                ),
+              ),
             ),
             const SizedBox(height: 18),
             FilledButton.tonal(
               onPressed:
-                  state.canSubmit
-                      ? () => context.read<ForgotBloc>().add(FgSubmitted())
+                  state.canRegister
+                      ? () => context.read<AuthBloc>().add(RegisterSubmitted())
                       : null,
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -139,9 +180,9 @@ class _ForgotForm extends StatelessWidget {
                         height: 22,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                      : const Text('Send reset link'),
+                      : const Text('Sign up'),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 14),
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Back to login'),
