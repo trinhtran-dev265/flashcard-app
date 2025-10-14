@@ -1,26 +1,35 @@
 import 'package:equatable/equatable.dart';
+import 'package:flashcard_fe/src/features/home/domain/model/kanji_entry.dart';
 
-abstract class AddCardEvent extends Equatable {
-  const AddCardEvent();
+abstract class CardEvent extends Equatable {
+  const CardEvent();
   @override
   List<Object?> get props => [];
 }
 
-class KanjiChanged extends AddCardEvent {
+/// Vào màn Edit thì bắn event này để fill sẵn form
+class PrefillForEdit extends CardEvent {
+  final KanjiEntry entry;
+  const PrefillForEdit(this.entry);
+  @override
+  List<Object?> get props => [entry];
+}
+
+class KanjiChanged extends CardEvent {
   final String kanji;
   const KanjiChanged(this.kanji);
   @override
   List<Object?> get props => [kanji];
 }
 
-class HowToReadChanged extends AddCardEvent {
-  final String text; // field “How to Read”
+class HowToReadChanged extends CardEvent {
+  final String text;
   const HowToReadChanged(this.text);
   @override
   List<Object?> get props => [text];
 }
 
-class RowHiraChanged extends AddCardEvent {
+class RowHiraChanged extends CardEvent {
   final int index;
   final String hira;
   const RowHiraChanged(this.index, this.hira);
@@ -28,7 +37,7 @@ class RowHiraChanged extends AddCardEvent {
   List<Object?> get props => [index, hira];
 }
 
-class RowEngChanged extends AddCardEvent {
+class RowEngChanged extends CardEvent {
   final int index;
   final String eng;
   const RowEngChanged(this.index, this.eng);
@@ -36,21 +45,21 @@ class RowEngChanged extends AddCardEvent {
   List<Object?> get props => [index, eng];
 }
 
-class AddRowPressed extends AddCardEvent {
+class AddRowPressed extends CardEvent {
   const AddRowPressed();
 }
 
-class RemoveRowPressed extends AddCardEvent {
+class RemoveRowPressed extends CardEvent {
   final int index;
   const RemoveRowPressed(this.index);
   @override
   List<Object?> get props => [index];
 }
 
-class SavePressed extends AddCardEvent {
+class SavePressed extends CardEvent {
   const SavePressed();
 }
 
-class ResetForm extends AddCardEvent {
+class ResetForm extends CardEvent {
   const ResetForm();
 }

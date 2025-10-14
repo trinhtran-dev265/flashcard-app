@@ -1,10 +1,10 @@
-import 'package:flashcard_fe/src/features/card/presentation/bloc/addcard_event.dart';
-import 'package:flashcard_fe/src/features/card/presentation/bloc/addcard_state.dart';
+import 'package:flashcard_fe/src/features/card/presentation/bloc/card_event.dart';
+import 'package:flashcard_fe/src/features/card/presentation/bloc/card_state.dart';
 import 'package:flashcard_fe/src/features/home/domain/model/kanji_entry.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AddCardBloc extends Bloc<AddCardEvent, AddCardState> {
-  AddCardBloc() : super(AddCardState.initial()) {
+class CardBloc extends Bloc<CardEvent, AddCardState> {
+  CardBloc() : super(AddCardState.initial()) {
     on<KanjiChanged>(
       (e, emit) => emit(
         state.copyWith(
@@ -60,10 +60,37 @@ class AddCardBloc extends Bloc<AddCardEvent, AddCardState> {
     on<ResetForm>((e, emit) => emit(AddCardState.initial()));
   }
 
+  void _onPrefill(PrefillForEdit e, Emitter<AddCardState> emit) {
+    final entry = e.entry;
+
+    // parse readings "hira: eng" (dòng đầu có thể là howToRead tuỳ cách bạn lưu)
+    // Ở app của bạn: howToRead là field riêng, phần readings còn lại là các dòng dưới
+    final rows =
+        entry.reading.map((line) {
+          final parts = line.split(':');
+          final hira = parts.first.trim();
+          final eng = parts.length > 1 ? parts.sublist(1).join(':').trim() : '';
+          return ReadingRow(hira: hira, eng: eng);
+        }).toList();
+
+    emit(
+      state.copyWith(
+        mode: CardFormMode.edit,
+        editingId: entry.id,
+        kanji: entry.kanji,
+        howToRead: entry.howToRead,
+        rows: rows.isEmpty ? [const ReadingRow()] : rows,
+        error: null,
+        success: false,
+        created: null,
+      ),
+    );
+  }
+
   Future<void> _onSave(SavePressed e, Emitter<AddCardState> emit) async {
     if (!state.canSubmit) return;
 
-    // build readings
+    // build readings lines
     final lines = <String>[];
     if (state.howToRead.trim().isNotEmpty) {
       lines.add(state.howToRead.trim());
@@ -85,14 +112,26 @@ class AddCardBloc extends Bloc<AddCardEvent, AddCardState> {
     emit(
       state.copyWith(loading: true, error: null, success: false, created: null),
     );
-    await Future<void>.delayed(const Duration(milliseconds: 250)); // giả lập
+    await Future<void>.delayed(
+      const Duration(milliseconds: 250),
+    ); // giả lập I/O
+
+    final isEdit = state.mode == CardFormMode.edit;
+    final id =
+        isEdit
+            ? (state.editingId ??
+                DateTime.now().millisecondsSinceEpoch.toString())
+            : DateTime.now().millisecondsSinceEpoch.toString();
 
     final entry = KanjiEntry(
+      id: id,
       kanji: state.kanji.trim(),
-      readings: lines,
+      howToRead: state.howToRead.trim(),
+      reading: lines,
       listLine: lines.join(' ・ '),
     );
 
+    // success = true để page pop result ra ngoài
     emit(state.copyWith(loading: false, success: true, created: entry));
   }
 }
