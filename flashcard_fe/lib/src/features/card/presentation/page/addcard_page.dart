@@ -1,7 +1,7 @@
 import 'dart:ui';
-import 'package:flashcard_fe/src/features/card/presentation/bloc/addcard_bloc.dart';
-import 'package:flashcard_fe/src/features/card/presentation/bloc/addcard_event.dart';
 import 'package:flashcard_fe/src/features/card/presentation/bloc/addcard_state.dart';
+import 'package:flashcard_fe/src/features/card/presentation/bloc/card_bloc.dart';
+import 'package:flashcard_fe/src/features/card/presentation/bloc/card_event.dart';
 import 'package:flashcard_fe/src/features/home/domain/model/kanji_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,7 +12,7 @@ class AddCardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AddCardBloc(),
+      create: (_) => CardBloc(),
       child: const _AddCardScaffold(),
     );
   }
@@ -49,7 +49,7 @@ class _AddCardScaffold extends StatelessWidget {
           ),
 
           SafeArea(
-            child: BlocConsumer<AddCardBloc, AddCardState>(
+            child: BlocConsumer<CardBloc, AddCardState>(
               listenWhen:
                   (p, c) => p.success != c.success || p.error != c.error,
               listener: (context, state) {
@@ -61,8 +61,10 @@ class _AddCardScaffold extends StatelessWidget {
                 if (state.success && state.created != null) {
                   final KanjiEntry e = state.created!;
                   Navigator.pop(context, {
+                    'id': e.id,
                     'kanji': e.kanji,
-                    'readings': e.readings,
+                    'howToRead': e.howToRead,
+                    'readings': e.reading,
                     'listLine': e.listLine,
                   });
                 }
@@ -91,7 +93,7 @@ class _AddCardScaffold extends StatelessWidget {
                               // Kanji
                               TextField(
                                 onChanged:
-                                    (v) => context.read<AddCardBloc>().add(
+                                    (v) => context.read<CardBloc>().add(
                                       KanjiChanged(v),
                                     ),
                                 style: const TextStyle(
@@ -110,7 +112,7 @@ class _AddCardScaffold extends StatelessWidget {
                               // How to Read
                               TextField(
                                 onChanged:
-                                    (v) => context.read<AddCardBloc>().add(
+                                    (v) => context.read<CardBloc>().add(
                                       HowToReadChanged(v),
                                     ),
                                 decoration: const InputDecoration(
@@ -134,7 +136,7 @@ class _AddCardScaffold extends StatelessWidget {
                                         child: TextField(
                                           onChanged:
                                               (v) => context
-                                                  .read<AddCardBloc>()
+                                                  .read<CardBloc>()
                                                   .add(RowHiraChanged(i, v)),
                                           decoration: const InputDecoration(
                                             hintText: 'Hiragana',
@@ -148,7 +150,7 @@ class _AddCardScaffold extends StatelessWidget {
                                         child: TextField(
                                           onChanged:
                                               (v) => context
-                                                  .read<AddCardBloc>()
+                                                  .read<CardBloc>()
                                                   .add(RowEngChanged(i, v)),
                                           decoration: const InputDecoration(
                                             hintText: 'Eng',
@@ -164,7 +166,7 @@ class _AddCardScaffold extends StatelessWidget {
                                           ),
                                           onPressed:
                                               () => context
-                                                  .read<AddCardBloc>()
+                                                  .read<CardBloc>()
                                                   .add(RemoveRowPressed(i)),
                                         ),
                                     ],
@@ -174,7 +176,7 @@ class _AddCardScaffold extends StatelessWidget {
                               if (state.canAddMore)
                                 TextButton.icon(
                                   onPressed:
-                                      () => context.read<AddCardBloc>().add(
+                                      () => context.read<CardBloc>().add(
                                         const AddRowPressed(),
                                       ),
                                   icon: const Icon(
@@ -203,7 +205,7 @@ class _AddCardScaffold extends StatelessWidget {
                                     onPressed:
                                         state.canSubmit
                                             ? () => context
-                                                .read<AddCardBloc>()
+                                                .read<CardBloc>()
                                                 .add(const SavePressed())
                                             : null,
                                     icon:

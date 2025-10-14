@@ -30,20 +30,26 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 }
 
-const _demoEntries = <KanjiEntry>[
+final _demoEntries = <KanjiEntry>[
   KanjiEntry(
+    id: DateTime.now().millisecondsSinceEpoch.toString(),
     kanji: '日',
-    readings: ['にち', 'にちようび: sunday', 'にほん／にぼん: Japan', 'きょう: Today'],
+    howToRead: 'にち',
+    reading: ['にちようび: sunday', 'にほん／にぼん: Japan', 'きょう: Today'],
     listLine: 'にち ・ にちようび ・ にほん／にぼん ・ きょう',
   ),
   KanjiEntry(
+    id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),    
     kanji: '月',
-    readings: ['げつ', 'げつようび: monday', 'げつ: month'],
+    howToRead: 'げつ',
+    reading: ['げつようび: monday', 'げつ: month'],
     listLine: 'げつ ・ げつようび ・ げつ',
   ),
   KanjiEntry(
+    id: (DateTime.now().millisecondsSinceEpoch + 2).toString(),
     kanji: '火',
-    readings: ['か', 'かようび: tuesday', 'ひ: fire'],
+    howToRead: 'か',
+    reading: ['かようび: tuesday', 'ひ: fire'],
     listLine: 'か ・ かようび ・ ひ',
   ),
 ];

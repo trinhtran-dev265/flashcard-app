@@ -20,7 +20,7 @@ class AddCardState extends Equatable {
   final bool loading;
   final String? error;
   final bool success;
-  final KanjiEntry? created; // entry tạo xong để pop về
+  final KanjiEntry? created;
 
   const AddCardState({
     this.kanji = '',

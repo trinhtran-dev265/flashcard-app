@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flashcard_fe/src/features/card/presentation/page/addcard_page.dart';
 import 'package:flashcard_fe/src/features/home/domain/model/kanji_entry.dart';
+import 'package:flashcard_fe/src/features/search/presentation/page/search_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/home_bloc.dart';
@@ -160,43 +161,63 @@ class _HomeScaffoldState extends State<_HomeScaffold>
                 Icons.person_rounded,
               ],
               onTap: (i) async {
-                // Add
-                if (i == 2) {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const AddCardPage()),
-                  );
-                  if (result != null) {
-                    final entry = KanjiEntry(
-                      kanji: result['kanji'] as String,
-                      readings:
-                          (result['readings'] as List)
-                              .map((e) => '$e')
-                              .toList(),
-                      listLine: result['listLine'] as String,
+                final ctx = context;
+
+                switch (i) {
+                  case 0:
+                    ctx.read<HomeBloc>().add(const NavChanged(0));
+                    return;
+
+                  case 1:
+                    await Navigator.push(
+                      ctx,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => SearchPage(
+                              initialData: ctx.read<HomeBloc>().state.entries,
+                            ),
+                      ),
                     );
-                    if (context.mounted) {
-                      context.read<HomeBloc>().add(AddCard(entry));
+                    if (!ctx.mounted) return;
+                    return;
+
+                  case 2:
+                    final result = await Navigator.push(
+                      ctx,
+                      MaterialPageRoute(builder: (_) => const AddCardPage()),
+                    );
+                    if (result != null && ctx.mounted) {
+                      final entry = KanjiEntry(
+                        id: result['id'] as String,
+                        kanji: result['kanji'] as String,
+                        howToRead: result['howToRead'] as String,
+                        reading:
+                            (result['readings'] as List)
+                                .map((e) => '$e')
+                                .toList(),
+                        listLine: result['listLine'] as String,
+                      );
+                      ctx.read<HomeBloc>().add(AddCard(entry));
                     }
-                  }
-                }
-                // Profile
-                else if (i == 4) {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => const ProfilePage(
-                            email: 'demo@demo.com',
-                            kanjiCount:
-                                3, // có thể thay bằng state.entries.length
-                          ),
-                    ),
-                  );
-                }
-                // Others: update nav index
-                else {
-                  context.read<HomeBloc>().add(NavChanged(i));
+                    return;
+
+                  case 3:
+                    ctx.read<HomeBloc>().add(const NavChanged(3));
+                    return;
+
+                  case 4:
+                    await Navigator.push(
+                      ctx,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => ProfilePage(
+                              email: 'demo@demo.com',
+                              kanjiCount:
+                                  ctx.read<HomeBloc>().state.entries.length,
+                            ),
+                      ),
+                    );
+                    return;
                 }
               },
             );
@@ -352,7 +373,7 @@ class _FlipKanjiCardState extends State<_FlipKanjiCard>
                         isFront
                             ? Text(
                               widget.entry.kanji,
-                              key: const ValueKey('front'),
+                              key: ValueKey('back-${widget.entry.id}'),
                               style: Theme.of(
                                 context,
                               ).textTheme.displayLarge?.copyWith(
@@ -364,7 +385,10 @@ class _FlipKanjiCardState extends State<_FlipKanjiCard>
                               alignment: Alignment.center,
                               transform:
                                   Matrix4.identity()..rotateY(3.1415926535),
-                              child: _BackFace(readings: widget.entry.readings),
+                              child: _BackFace(
+                                howToRead: widget.entry.howToRead,
+                                readings: widget.entry.readings,
+                              ),
                             ),
                   ),
                 ),
@@ -378,8 +402,9 @@ class _FlipKanjiCardState extends State<_FlipKanjiCard>
 }
 
 class _BackFace extends StatelessWidget {
+  final String howToRead;
   final List<String> readings;
-  const _BackFace({required this.readings});
+  const _BackFace({required this.readings, required this.howToRead});
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -387,17 +412,32 @@ class _BackFace extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (final line in readings)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                line,
-                textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(height: 1.2),
+          if (howToRead.isNotEmpty) ...[
+            Text(
+              howToRead,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                height: 1.2,
               ),
             ),
+            const SizedBox(height: 8),
+          ],
+          if (readings.isNotEmpty) ...[
+            for (final line in readings)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text(
+                  line,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(height: 1.2),
+                ),
+              ),
+            if (howToRead.isEmpty && readings.isEmpty)
+              const Text('Chưa có cách đọc'),
+          ],
         ],
       ),
     );
