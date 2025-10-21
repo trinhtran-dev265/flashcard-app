@@ -103,11 +103,6 @@ class CardBloc extends Bloc<CardEvent, CardState> {
                 DateTime.now().millisecondsSinceEpoch.toString())
             : DateTime.now().millisecondsSinceEpoch.toString();
 
-    final preview = lines
-        .map((s) => s.split(':').first.trim())
-        .where((s) => s.isNotEmpty)
-        .join(' ・ ');
-
     final entry = KanjiEntry(
       id: id,
       kanji: state.kanji.trim(),

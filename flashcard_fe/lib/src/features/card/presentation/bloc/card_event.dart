@@ -7,6 +7,7 @@ abstract class CardEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+/// Vào màn Edit thì bắn event này để fill sẵn form
 class PrefillForEdit extends CardEvent {
   final KanjiEntry entry;
   const PrefillForEdit(this.entry);
