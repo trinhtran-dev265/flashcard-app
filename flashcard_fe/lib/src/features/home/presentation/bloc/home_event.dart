@@ -35,3 +35,17 @@ class AddCard extends HomeEvent {
   @override
   List<Object?> get props => [entry];
 }
+
+class UpdateCard extends HomeEvent {
+  final KanjiEntry entry;
+  const UpdateCard(this.entry);
+  @override
+  List<Object?> get props => [entry];
+}
+
+class DeleteCard extends HomeEvent {
+  final String id;
+  const DeleteCard(this.id);
+  @override
+  List<Object?> get props => [id];
+}

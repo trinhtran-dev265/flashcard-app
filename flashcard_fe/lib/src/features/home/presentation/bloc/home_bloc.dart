@@ -27,23 +27,47 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         state.copyWith(entries: list, current: list.length - 1, tabIndex: 0),
       );
     });
+
+    on<UpdateCard>((e, emit) {
+      final i = state.entries.indexWhere((x) => x.id == e.entry.id);
+      if (i == -1) return;
+      final list = List<KanjiEntry>.from(state.entries);
+      list[i] = e.entry;
+      emit(state.copyWith(entries: list, current: i, tabIndex: 0));
+    });
+
+    on<DeleteCard>((e, emit) {
+      final list = List<KanjiEntry>.from(state.entries)
+        ..removeWhere((x) => x.id == e.id);
+      final newCurrent =
+          list.isEmpty ? 0 : (state.current.clamp(0, list.length - 1));
+      emit(
+        state.copyWith(entries: list, current: newCurrent, tabIndex: 1),
+      ); 
+    });
   }
 }
 
-const _demoEntries = <KanjiEntry>[
+final _demoEntries = <KanjiEntry>[
   KanjiEntry(
+    id: DateTime.now().millisecondsSinceEpoch.toString(),
     kanji: '日',
-    readings: ['にち', 'にちようび: sunday', 'にほん／にぼん: Japan', 'きょう: Today'],
+    howToRead: 'にち',
+    reading: ['にちようび: sunday', 'にほん／にぼん: Japan', 'きょう: Today'],
     listLine: 'にち ・ にちようび ・ にほん／にぼん ・ きょう',
   ),
   KanjiEntry(
+    id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
     kanji: '月',
-    readings: ['げつ', 'げつようび: monday', 'げつ: month'],
+    howToRead: 'げつ',
+    reading: ['げつようび: monday', 'げつ: month'],
     listLine: 'げつ ・ げつようび ・ げつ',
   ),
   KanjiEntry(
+    id: (DateTime.now().millisecondsSinceEpoch + 2).toString(),
     kanji: '火',
-    readings: ['か', 'かようび: tuesday', 'ひ: fire'],
+    howToRead: 'か',
+    reading: ['かようび: tuesday', 'ひ: fire'],
     listLine: 'か ・ かようび ・ ひ',
   ),
 ];
